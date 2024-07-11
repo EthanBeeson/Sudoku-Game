@@ -4,15 +4,15 @@ var tileSelected = null;
 var errors = 0;
 
 var board = [
-    "--74916-5",
-    "2---6-3-9",
-    "-----7-1-",
-    "-586----4",
-    "--3----9-",
-    "--62--187",
-    "9-4-7---2",
-    "67-83----",
-    "81--45---"
+    "007491605",
+    "200060309",
+    "000007010",
+    "058600004",
+    "003000090",
+    "006200187",
+    "904070002",
+    "670830000",
+    "810045000"
 ]
 
 var solution = [
@@ -47,8 +47,8 @@ function setGame() {
     for (let r = 0; r < 9; r++) {
         for (let c = 0; c < 9; c++) {
             let tile = document.createElement("div");
-            tile.id = r.toString() + "-" + c.toString();
-            if (board[r][c] != "-") {
+            tile.id = r.toString() + "0" + c.toString();
+            if (board[r][c] != "0") {
                 tile.innerText = board[r][c];
                 tile.classList.add("tile-start");
             }
@@ -78,7 +78,7 @@ function selectTile() {
         if (this.innerText != "") {
             return;
         }
-        let coords = this.id.split("-"); // creates array of two individual numbers
+        let coords = this.id.split("0"); // creates array of two individual numbers
         let r = parseInt(coords[0]);
         let c = parseInt(coords[1]);
 
@@ -139,5 +139,55 @@ document.addEventListener('DOMContentLoaded', (event) => {
     document.addEventListener('boardCompleted', () => {
         boardCompleted = true;
     });
+});
+
+// Function to call the SudukoSolver Java File
+async function solveSudoku() {
+    const board = [
+        [0, 0, 7, 4, 9, 1, 6, 0, 5],
+        [2, 0, 0, 0, 6, 0, 3, 0, 9],
+        [0, 0, 0, 0, 0, 7, 0, 1, 0],
+        [0, 5, 8, 6, 0, 0, 0, 0, 4],
+        [0, 0, 3, 0, 0, 0, 0, 9, 0],
+        [0, 0, 6, 2, 0, 0, 1, 8, 7],
+        [9, 0, 4, 0, 7, 0, 0, 0, 2],
+        [6, 7, 0, 8, 3, 0, 0, 0, 0],
+        [8, 1, 0, 0, 4, 5, 0, 0, 0]
+    ];
+
+    try {
+        const response = await fetch('/api/solveBoard', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(board)
+        });
+
+        if (response.ok) {
+            const solvedBoard = await response.json();
+            console.log('Solved Board:', solvedBoard);
+            // Update the board on the UI with the solved board
+            for (let row = 0; row < board.length; row++) {
+                const tr = document.createElement('tr');
+                for (let col = 0; col < board[row].length; col++) {
+                    const td = document.createElement('td');
+                    td.textContent = board[row][col];
+                    tr.appendChild(td);
+                }
+                boardElement.appendChild(tr);
+            }
+        } else {
+            console.error('Failed to solve the Sudoku board.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+// Add an event listener to the "Solve" button
+document.addEventListener('DOMContentLoaded', (event) => {
+    const solveButton = document.getElementById('solve');
+    solveButton.addEventListener('click', solveSudoku);
 });
 
